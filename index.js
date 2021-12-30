@@ -98,7 +98,7 @@ app.use((req, res, next) => {
   error.status = 404;
   next(error);
 });
-
+// github:Automattic/node-canvas#198080580a0e3938c48daae357b88a1638a9ddcd
 app.use((error, req, res, next) => {
   res.status(error.status || 500).send({
     error: {
