@@ -11,7 +11,24 @@ const fs = require("fs");
 const faceapi = require("@vladmandic/face-api");
 const path = require("path");
 
-const upload = multer({ dest: "uploads/" });
+const mime = require("mime");
+const aws = require("aws-sdk");
+const crypto = require("crypto");
+
+const tmpFolder = path.resolve(__dirname, ".", "tmp");
+const uploadsFolder = path.resolve(tmpFolder, "uploads");
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: tmpFolder,
+    filename(request, file, callback) {
+      const fileHash = crypto.randomBytes(10).toString("HEX");
+      const fileName = `${fileHash}-${file.originalname}`;
+
+      return callback(null, fileName);
+    },
+  }),
+});
 
 const app = express();
 const port = process.env.PORT || 3333;
@@ -28,6 +45,38 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.get("/", (req, res) => {
   res.json(books);
 });
+
+async function saveFile(file, isPublic = true) {
+  const client = new aws.S3({
+    region: "sa-east-1",
+  });
+
+  const originalPath = path.resolve(tmpFolder, file);
+
+  const ContentType = mime.getType(originalPath);
+
+  // const resizedImageData = await sharp(originalPath).resize(500).toBuffer()
+
+  const fileContent = await fs.promises.readFile(originalPath);
+
+  if (!ContentType) {
+    throw new Error("File not found");
+  }
+
+  await client
+    .putObject({
+      Bucket: "togu",
+      Key: file,
+      ACL: isPublic ? "public-read" : "private",
+      Body: fileContent,
+      ContentType,
+    })
+    .promise();
+
+  // await fs.promises.unlink(originalPath);
+
+  return file;
+}
 
 app.post("/", upload.single("image"), async (req, res) => {
   const MODEL_URL = "./model";
@@ -55,16 +104,16 @@ app.post("/", upload.single("image"), async (req, res) => {
 
   const faceDetectionOptions = getFaceDetectorOptions();
 
-  const tmpFolder = path.resolve(__dirname, "uploads");
-
   const compareUrl = req.body.compareUrl;
   const avatarFilename = req.file.filename;
-
   const avatar_url = compareUrl;
   const originalPath = path.resolve(tmpFolder, avatarFilename);
 
   const referenceImage = await canvas.loadImage(avatar_url);
+  console.log(referenceImage);
+
   const queryImage = await canvas.loadImage(originalPath);
+  console.log(queryImage);
 
   const resultsRef = await faceapi.detectAllFaces(
     referenceImage,
@@ -88,6 +137,7 @@ app.post("/", upload.single("image"), async (req, res) => {
   } else {
     throw new Error("Sem rosto");
   }
+  await saveFile(avatarFilename);
   await fs.promises.unlink(originalPath);
 
   return res.json({ distance, samePerson: distance < 0.55 });
@@ -98,6 +148,7 @@ app.use((req, res, next) => {
   error.status = 404;
   next(error);
 });
+// npm install Automattic/node-canvas#m1
 // github:Automattic/node-canvas#198080580a0e3938c48daae357b88a1638a9ddcd
 app.use((error, req, res, next) => {
   res.status(error.status || 500).send({
