@@ -15,7 +15,7 @@
     "@vladmandic/face-api": "^1.6.1",
     "aws-sdk": "^2.1048.0",
     "body-parser": "^1.19.1",
-    "canvas": "^2.8.0",
+    "canvas": "github:Automattic/node-canvas#198080580a0e3938c48daae357b88a1638a9ddcd",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^10.0.0",

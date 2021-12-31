@@ -110,10 +110,8 @@ app.post("/", upload.single("image"), async (req, res) => {
   const originalPath = path.resolve(tmpFolder, avatarFilename);
 
   const referenceImage = await canvas.loadImage(avatar_url);
-  console.log(referenceImage);
 
   const queryImage = await canvas.loadImage(originalPath);
-  console.log(queryImage);
 
   const resultsRef = await faceapi.detectAllFaces(
     referenceImage,
@@ -137,7 +135,7 @@ app.post("/", upload.single("image"), async (req, res) => {
   } else {
     throw new Error("Sem rosto");
   }
-  await saveFile(avatarFilename);
+  // await saveFile(avatarFilename);
   await fs.promises.unlink(originalPath);
 
   return res.json({ distance, samePerson: distance < 0.55 });
@@ -150,6 +148,7 @@ app.use((req, res, next) => {
 });
 // npm install Automattic/node-canvas#m1
 // github:Automattic/node-canvas#198080580a0e3938c48daae357b88a1638a9ddcd
+// npm install canvas@github:Automattic/node-canvas#198080580a0e3938c48daae357b88a1638a9ddcd
 app.use((error, req, res, next) => {
   res.status(error.status || 500).send({
     error: {
