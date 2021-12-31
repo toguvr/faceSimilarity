@@ -19,7 +19,7 @@ const port = process.env.PORT || 3333;
 // Where we will keep books
 let books = [];
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
 // Configuring body parser middleware
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
