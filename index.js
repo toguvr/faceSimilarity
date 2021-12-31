@@ -90,7 +90,7 @@ app.post("/", upload.single("image"), async (req, res) => {
   }
   await fs.promises.unlink(originalPath);
 
-  return res.json(distance < 0.55);
+  return res.json({ distance, samePerson: distance < 0.55 });
 });
 
 app.use((req, res, next) => {
