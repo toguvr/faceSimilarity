@@ -135,7 +135,7 @@ app.post("/", upload.single("image"), async (req, res) => {
   } else {
     throw new Error("Sem rosto");
   }
-  // await saveFile(avatarFilename);
+  await saveFile(avatarFilename);
   await fs.promises.unlink(originalPath);
 
   return res.json({ distance, samePerson: distance < 0.55 });
