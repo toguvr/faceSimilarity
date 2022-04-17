@@ -138,7 +138,7 @@ app.post("/", upload.single("image"), async (req, res) => {
   // await saveFile(avatarFilename);
   await fs.promises.unlink(originalPath);
 
-  return res.json({ distance, samePerson: distance < 0.55 });
+  return res.json({ distance, samePerson: distance < 0.5 });
 });
 
 app.use((req, res, next) => {
