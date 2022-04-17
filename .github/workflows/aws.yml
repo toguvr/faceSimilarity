@@ -25,9 +25,6 @@ jobs:
     
     - name: Install dependencies
       run: yarn
-  
-    - name: Run build
-      run: yarn build
       
     - name: Generate deployment package
       run: zip -r deploy.zip * -x "**node_modules**"
